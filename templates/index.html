@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aurora Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f0f0f5; }
+        #chatbox { width: 100%; max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .message { margin-bottom: 10px; }
+        .bot { color: #0077cc; }
+        .user { color: #444; text-align: right; }
+    </style>
+</head>
+<body>
+<div id="chatbox">
+    <div id="messages"></div>
+    <input type="text" id="input" placeholder="Type your message..." style="width: 80%;">
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+    let userId = "";
+
+    async function initChat() {
+        let res = await fetch('/start', { method: 'POST' });
+        let data = await res.json();
+        userId = data.user_id;
+        addMessage("Aurora", data.message);
+    }
+
+    async function sendMessage() {
+        let input = document.getElementById("input");
+        let msg = input.value;
+        input.value = "";
+        addMessage("You", msg);
+
+        let res = await fetch('/message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, message: msg })
+        });
+        let data = await res.json();
+
+        addMessage("Aurora", data.response);
+    }
+
+    function addMessage(sender, text) {
+        let div = document.createElement("div");
+        div.className = "message " + (sender === "You" ? "user" : "bot");
+        div.textContent = sender + ": " + text;
+        document.getElementById("messages").appendChild(div);
+    }
+
+    window.onload = initChat;
+</script>
+</body>
+</html>
